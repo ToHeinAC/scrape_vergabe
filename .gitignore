@@ -1,0 +1,16 @@
+# Virtual Environment
+.venv311_scr/
+__pycache__/
+
+# Debug files
+debug_pages/
+page_*.html
+
+# Database files
+*.db
+
+# Excel files
+*.xlsx
+
+# Other
+.DS_Store

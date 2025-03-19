@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "evergabe-scraper"
+version = "0.1.0"
+description = "A web scraper for evergabe.de tender information"
+authors = [
+    {name = "Tobias Hein"}
+]
+requires-python = ">=3.8"
+dependencies = [
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.2",
+    "pandas>=2.1.3",
+    "selenium>=4.15.2",
+    "webdriver-manager>=4.0.1",
+    "python-dateutil>=2.8.2",
+    "lxml>=4.9.3",
+    "crawl4ai>=0.3.0",
+    "streamlit>=1.29.0",
+    "openpyxl>=3.1.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+]
+
+[tool.black]
+line-length = 100
+target-version = ['py38']
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.pytest]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+
+[tool.setuptools]
+packages = ["evergabe_scraper"]
+
+[tool.setuptools.package-data]
+evergabe_scraper = ["*.md"]
