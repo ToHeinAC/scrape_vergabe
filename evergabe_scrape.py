@@ -257,9 +257,13 @@ def extract_tender_data(html_content, tender_url=None, search_term=None):
                         date, time = date_match.groups()
                         data['nächste Frist'] = f"{date} {time}"
                     else:
-                        # If regex fails, try simple cleaning
-                        date_str = date_str.replace('Uhr', '').strip()
-                        data['nächste Frist'] = date_str
+                        # If regex fails, check if there's a date pattern without time
+                        date_only_match = re.search(r'(\d{1,2}\.\d{1,2}\.\d{4})', date_str)
+                        if date_only_match:
+                            data['nächste Frist'] = date_only_match.group(1)
+                        else:
+                            # If no date pattern found, use "-"
+                            data['nächste Frist'] = '-'
                 else:
                     # If no colon separator, try to extract date directly using regex
                     import re
@@ -267,6 +271,14 @@ def extract_tender_data(html_content, tender_url=None, search_term=None):
                     if date_match:
                         date, time = date_match.groups()
                         data['nächste Frist'] = f"{date} {time}"
+                    else:
+                        # Check if there's a date pattern without time
+                        date_only_match = re.search(r'(\d{1,2}\.\d{1,2}\.\d{4})', elem_text)
+                        if date_only_match:
+                            data['nächste Frist'] = date_only_match.group(1)
+                        else:
+                            # If no date pattern found, use "-"
+                            data['nächste Frist'] = '-'
                 break
         
         # If still not found, try looking for time elements with specific attributes
@@ -284,7 +296,13 @@ def extract_tender_data(html_content, tender_url=None, search_term=None):
                         date, time = date_match.groups()
                         data['nächste Frist'] = f"{date} {time}"
                     else:
-                        data['nächste Frist'] = time_text
+                        # Check if there's a date pattern without time
+                        date_only_match = re.search(r'(\d{1,2}\.\d{1,2}\.\d{4})', time_text)
+                        if date_only_match:
+                            data['nächste Frist'] = date_only_match.group(1)
+                        else:
+                            # If no date pattern found, use "-"
+                            data['nächste Frist'] = '-'
                     break
         
         # Try to find the specific layout from the image with days tag and date
@@ -308,7 +326,13 @@ def extract_tender_data(html_content, tender_url=None, search_term=None):
                                 date, time = date_match.groups()
                                 data['nächste Frist'] = f"{date} {time}"
                             else:
-                                data['nächste Frist'] = date_text
+                                # Check if there's a date pattern without time
+                                date_only_match = re.search(r'(\d{1,2}\.\d{1,2}\.\d{4})', date_text)
+                                if date_only_match:
+                                    data['nächste Frist'] = date_only_match.group(1)
+                                else:
+                                    # If no date pattern found, use "-"
+                                    data['nächste Frist'] = '-'
                             break
         
         # Extract dates - improved approach
@@ -326,10 +350,24 @@ def extract_tender_data(html_content, tender_url=None, search_term=None):
                 # Extract deadline (Frist)
                 if any(term in dt_text for term in ['frist', 'einreichung', 'abgabe', 'angebotsfrist', 'teilnahmefrist']) and data['nächste Frist'] == 'Nicht verfügbar':
                     if dd_text and dd_text != 'Nach Freischalten sichtbar':
-                        data['nächste Frist'] = dd_text
+                        time_text = dd_text.replace('Uhr', '').strip()
+                        # Extract date and time using regex
+                        import re
+                        date_match = re.search(r'(\d{1,2}\.\d{1,2}\.\d{4})\s*(\d{1,2}:\d{2})', time_text)
+                        if date_match:
+                            date, time = date_match.groups()
+                            data['nächste Frist'] = f"{date} {time}"
+                        else:
+                            # Check if there's a date pattern without time
+                            date_only_match = re.search(r'(\d{1,2}\.\d{1,2}\.\d{4})', time_text)
+                            if date_only_match:
+                                data['nächste Frist'] = date_only_match.group(1)
+                            else:
+                                # If no date pattern found, use "-"
+                                data['nächste Frist'] = '-'
                 
                 # Extract publication date (if available)
-                if any(term in dt_text for term in ['veröffentlicht', 'publiziert', 'datum', 'bekanntmachung', 'bekannt']) and data['veröffentlicht seit'] == 'Nicht verfügbar':
+                if any(term in dt_text for term in ['veröffentlicht', 'publiziert', 'bekanntmachung', 'bekannt']) and data['veröffentlicht seit'] == 'Nicht verfügbar':
                     if dd_text and dd_text != 'Nach Freischalten sichtbar':
                         data['veröffentlicht seit'] = dd_text
         
@@ -375,7 +413,22 @@ def extract_tender_data(html_content, tender_url=None, search_term=None):
                     elif (any(term in time_text for term in ['frist', 'einreichung', 'abgabe', 'angebotsfrist']) or
                           any(term in title_attr.lower() for term in ['frist', 'einreichung', 'abgabe', 'angebotsfrist']) or
                           any(term in parent_text for term in ['frist', 'einreichung', 'abgabe', 'angebotsfrist'])):
-                        data['nächste Frist'] = time_elem.get_text(strip=True) or datetime_attr
+                        time_text = time_text.replace('Uhr', '').strip()
+                        # Extract date and time using regex
+                        import re
+                        date_match = re.search(r'(\d{1,2}\.\d{1,2}\.\d{4})\s*(\d{1,2}:\d{2})', time_text)
+                        if date_match:
+                            date, time = date_match.groups()
+                            data['nächste Frist'] = f"{date} {time}"
+                        else:
+                            # Check if there's a date pattern without time
+                            date_only_match = re.search(r'(\d{1,2}\.\d{1,2}\.\d{4})', time_text)
+                            if date_only_match:
+                                data['nächste Frist'] = date_only_match.group(1)
+                            else:
+                                # If no date pattern found, use "-"
+                                data['nächste Frist'] = '-'
+                break
         
         # 4. Look for date spans or divs (as backup)
         if data['veröffentlicht seit'] == 'Nicht verfügbar' or data['nächste Frist'] == 'Nicht verfügbar':
@@ -393,13 +446,21 @@ def extract_tender_data(html_content, tender_url=None, search_term=None):
                         data['veröffentlicht seit'] = date_text
                 
                 if any(term in date_text for term in ['frist', 'einreichung', 'abgabe', 'angebotsfrist']) and data['nächste Frist'] == 'Nicht verfügbar':
-                    # Try to extract the date from the text
-                    date_parts = date_text.split(':', 1)
-                    if len(date_parts) > 1:
-                        data['nächste Frist'] = date_parts[1].strip()
+                    time_text = date_text.replace('Uhr', '').strip()
+                    # Extract date and time using regex
+                    import re
+                    date_match = re.search(r'(\d{1,2}\.\d{1,2}\.\d{4})\s*(\d{1,2}:\d{2})', time_text)
+                    if date_match:
+                        date, time = date_match.groups()
+                        data['nächste Frist'] = f"{date} {time}"
                     else:
-                        # If no colon, check if there's a date pattern in the text
-                        data['nächste Frist'] = date_text
+                        # Check if there's a date pattern without time
+                        date_only_match = re.search(r'(\d{1,2}\.\d{1,2}\.\d{4})', time_text)
+                        if date_only_match:
+                            data['nächste Frist'] = date_only_match.group(1)
+                        else:
+                            # If no date pattern found, use "-"
+                            data['nächste Frist'] = '-'
         
         # 5. If we still don't have a publication date, try a more aggressive approach
         if data['veröffentlicht seit'] == 'Nicht verfügbar':
@@ -455,7 +516,21 @@ async def extract_tender_from_search_page(tender, crawler, crawler_config, searc
         if deadline_elem:
             deadline = deadline_elem.get_text(strip=True)
             if deadline and deadline != 'Nach Freischalten sichtbar':
-                data['nächste Frist'] = deadline
+                time_text = deadline.replace('Uhr', '').strip()
+                # Extract date and time using regex
+                import re
+                date_match = re.search(r'(\d{1,2}\.\d{1,2}\.\d{4})\s*(\d{1,2}:\d{2})', time_text)
+                if date_match:
+                    date, time = date_match.groups()
+                    data['nächste Frist'] = f"{date} {time}"
+                else:
+                    # Check if there's a date pattern without time
+                    date_only_match = re.search(r'(\d{1,2}\.\d{1,2}\.\d{4})', time_text)
+                    if date_only_match:
+                        data['nächste Frist'] = date_only_match.group(1)
+                    else:
+                        # If no date pattern found, use "-"
+                        data['nächste Frist'] = '-'
         
         # Visit the detail page to get more information
         print(f"Visiting tender detail page: {link}")
@@ -547,43 +622,14 @@ async def scrape_evergabe(search_term='strahlenschutz', days=7):
         if df.empty:
             print(f"Keine Ausschreibungen für '{search_term}' in den letzten {days} Tagen gefunden.")
         else:
-            # Generate timestamp for the filename
+            # Generate timestamp for the filename (for logging purposes only)
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_filename = f"vergabe_results_{timestamp}.xlsx"
-
-            # Save to Excel file with clickable links
-            print(f"Saving {len(results)} results to {output_filename}")
             
-            # Create Excel writer with openpyxl engine
-            with pd.ExcelWriter(output_filename, engine='openpyxl') as writer:
-                df.to_excel(writer, index=False, sheet_name='Tender Results')
-                
-                # Access the workbook and the worksheet
-                workbook = writer.book
-                worksheet = writer.sheets['Tender Results']
-                
-                # Find the column index for the link column
-                link_col_idx = None
-                for idx, col in enumerate(df.columns):
-                    if col == 'Link zur Ausschreibung':
-                        link_col_idx = idx + 1  # +1 because Excel is 1-indexed
-                        break
-                
-                # If link column exists, make the links clickable
-                if link_col_idx is not None:
-                    for row_idx, link in enumerate(df['Link zur Ausschreibung']):
-                        if link != 'Nicht verfügbar':
-                            cell = worksheet.cell(row=row_idx + 2, column=link_col_idx)  # +2 for header and 1-indexing
-                            cell.hyperlink = link
-                            cell.style = 'Hyperlink'
-
-            print(f"Results saved to {output_filename}")
+            # Log the results but don't save to file automatically
+            print(f"Found {len(results)} results for '{search_term}' at {timestamp}")
             
-            # Ergebnisse anzeigen
-            print("\nGefundene Ausschreibungen:")
-            print(df)
-        
-        return df
+            # Return the DataFrame without saving to Excel
+            return df
 
 # Hauptprogramm
 async def main():

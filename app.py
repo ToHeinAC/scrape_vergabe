@@ -7,6 +7,7 @@ import asyncio
 import shutil
 from evergabe_scrape import scrape_evergabe
 import database
+from PIL import Image
 
 # Initialize the database when the app starts
 database.initialize_database()
@@ -43,10 +44,21 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# App title and description
-st.title("Evergabe Tender Scraper")
-st.markdown("""This app scrapes tender information from evergabe.de based on your search terms.  
+# Create two columns for the header section
+col1, col2 = st.columns([2, 1])
+
+# First column: App title and description
+with col1:
+    st.title("Evergabe Tender Scraper")
+    st.markdown("""This app scrapes tender information from evergabe.de based on your search terms.  
 Results are stored in a database and can be downloaded as CSV or Excel.""")
+
+# Second column: Header image
+with col2:
+    header_image_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Header für AdvSolution2.png')
+    if os.path.exists(header_image_path):
+        header_image = Image.open(header_image_path)
+        st.image(header_image, use_container_width=True)
 
 # Sidebar for inputs
 with st.sidebar:
